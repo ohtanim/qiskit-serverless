@@ -1,0 +1,40 @@
+﻿qiskit\_serverless.core.BaseClient
+==================================
+
+.. currentmodule:: qiskit_serverless.core
+
+.. autoclass:: BaseClient
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BaseClient.__init__
+      ~BaseClient.filtered_logs
+      ~BaseClient.from_dict
+      ~BaseClient.function
+      ~BaseClient.functions
+      ~BaseClient.get
+      ~BaseClient.get_job_by_id
+      ~BaseClient.get_jobs
+      ~BaseClient.job
+      ~BaseClient.jobs
+      ~BaseClient.list
+      ~BaseClient.logs
+      ~BaseClient.result
+      ~BaseClient.run
+      ~BaseClient.status
+      ~BaseClient.stop
+      ~BaseClient.to_dict
+      ~BaseClient.upload
+      ~BaseClient.widget
+   
+   
+
+   
+   
+   

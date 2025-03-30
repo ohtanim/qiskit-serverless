@@ -1,0 +1,50 @@
+﻿qiskit\_serverless.core.IBMServerlessClient
+===========================================
+
+.. currentmodule:: qiskit_serverless.core
+
+.. autoclass:: IBMServerlessClient
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~IBMServerlessClient.__init__
+      ~IBMServerlessClient.file_delete
+      ~IBMServerlessClient.file_download
+      ~IBMServerlessClient.file_upload
+      ~IBMServerlessClient.files
+      ~IBMServerlessClient.filtered_logs
+      ~IBMServerlessClient.from_dict
+      ~IBMServerlessClient.function
+      ~IBMServerlessClient.functions
+      ~IBMServerlessClient.get
+      ~IBMServerlessClient.get_job_by_id
+      ~IBMServerlessClient.get_jobs
+      ~IBMServerlessClient.job
+      ~IBMServerlessClient.jobs
+      ~IBMServerlessClient.list
+      ~IBMServerlessClient.logs
+      ~IBMServerlessClient.provider_file_delete
+      ~IBMServerlessClient.provider_file_download
+      ~IBMServerlessClient.provider_file_upload
+      ~IBMServerlessClient.provider_files
+      ~IBMServerlessClient.provider_jobs
+      ~IBMServerlessClient.result
+      ~IBMServerlessClient.run
+      ~IBMServerlessClient.save_account
+      ~IBMServerlessClient.status
+      ~IBMServerlessClient.stop
+      ~IBMServerlessClient.to_dict
+      ~IBMServerlessClient.upload
+      ~IBMServerlessClient.widget
+   
+   
+
+   
+   
+   

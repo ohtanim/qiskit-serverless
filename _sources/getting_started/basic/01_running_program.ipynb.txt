@@ -1,0 +1,330 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "66030e20-b384-4dcf-9c5f-7664f7ad1693",
+   "metadata": {},
+   "source": [
+    "# Running a Qiskit Function as a function\n",
+    "\n",
+    "In this tutorial, we will write a basic Qiskit Function using Qiskit Serverless. We will show how to run the function remotely and retrieve the results from the serverless client.\n",
+    "\n",
+    "### Writing the Qiskit Function\n",
+    "\n",
+    "First, we need to write the function code and save it to a file called [function.py](./source_files/function.py). This function creates a two-qubit quantum circuit that prepares a Bell state, measures the result, and saves the measured probability distribution.\n",
+    "\n",
+    "The code for the function is shown below:\n",
+    "\n",
+    "```python\n",
+    "from qiskit import QuantumCircuit\n",
+    "from qiskit.primitives import Sampler\n",
+    "\n",
+    "from qiskit_serverless import save_result\n",
+    "\n",
+    "# all print statement will be available in job logs\n",
+    "print(\"Running function...\")\n",
+    "\n",
+    "# creating circuit\n",
+    "circuit = QuantumCircuit(2)\n",
+    "circuit.h(0)\n",
+    "circuit.cx(0, 1)\n",
+    "circuit.measure_all()\n",
+    "\n",
+    "# running Sampler primitive\n",
+    "sampler = Sampler()\n",
+    "quasi_dists = sampler.run(circuit).result().quasi_dists\n",
+    "\n",
+    "# save results of function execution, \n",
+    "# which will be accessible by calling `.result()`\n",
+    "save_result(quasi_dists)\n",
+    "print(\"Completed running function.\")\n",
+    "```\n",
+    "\n",
+    "### Deploying the function\n",
+    "\n",
+    "To run the function, we need to import the necessary classes and configure them. One of these classes is `ServerlessClient`, which is a client class for interacting with compute resources.\n",
+    "\n",
+    "The client stores configuration information about our compute resources, such as where they are located and how to connect to them. In this example, we will use a provider that is connected to a local Docker Compose setup. In this case, it allows us to run the function locally on our machine. If you want to run the function elsewhere, you will need to provide the corresponding host and authentication details."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "81dd7807-7180-4b87-bbf9-832b7cf29d69",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from qiskit_serverless import ServerlessClient\n",
+    "import os"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7ac24f62-8487-47fb-9805-66f2192953d4",
+   "metadata": {},
+   "source": [
+    "> &#x26A0; This provider is set up with default credentials to a test cluster intended to run on your machine. For information on setting up infrastructure on your local machine, check out the guide on [local infrastructure setup](https://qiskit.github.io/qiskit-serverless/deployment/local.html)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "acdec789-4967-48ee-8f6c-8d2b0ff57e91",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<gateway-client>"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "client = ServerlessClient(\n",
+    "    token=os.environ.get(\"GATEWAY_TOKEN\", \"awesome_token\"),\n",
+    "    host=os.environ.get(\"GATEWAY_HOST\", \"http://localhost:8000\"),\n",
+    "    # If you are using the kubernetes approach the URL must be http://localhost\n",
+    ")\n",
+    "\n",
+    "client"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4dd85621-9ab0-4f34-9ab4-07ad773c5e00",
+   "metadata": {},
+   "source": [
+    "\n",
+    "\n",
+    "`QiskitFunction` accepts couple of required parameters:\n",
+    "\n",
+    "- title - name of the Qiskit Function\n",
+    "- entrypoint - name of python file you want to execute\n",
+    "- working_dir - directory where  your script is located (directory size must be less than 50MB). This is optional parameter and will be current folder by default.\n",
+    "\n",
+    "> Warning! All content of `working_dir` will be shipped to cluster for execution\n",
+    "\n",
+    "> Warning! Execution of `upload` function ships All content of `working_dir`.  When the contents of `working_dir` is changed, the `upload` function must be called again to update the shipped directory contents."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "d51df836-3f22-467c-b637-5803145d5d8a",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "QiskitFunction(my-first-function)"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from qiskit_serverless import QiskitFunction\n",
+    "\n",
+    "function = QiskitFunction(\n",
+    "    title=\"my-first-function\", entrypoint=\"function.py\", working_dir=\"./source_files/\"\n",
+    ")\n",
+    "\n",
+    "client.upload(function)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3e5326e2-9ff8-48e8-a8a9-18716633fd01",
+   "metadata": {},
+   "source": [
+    "### Running the QiskitFunction\n",
+    "\n",
+    "After deploying the QiskitFunction, we can see our function in a `list` of availiable functions."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "1aeefabf",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "QiskitFunction(my-first-function)"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "my_first_function = client.get(\"my-first-function\")\n",
+    "my_first_function"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "135eda5f",
+   "metadata": {},
+   "source": [
+    "We can run any function by calling `run` method on function object."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "d55e3b06-8ab4-42d6-ad47-0f974d8d2247",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<Job | 860c98e2-ec3c-4197-8042-115ec3c6f5e8>"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "job = my_first_function.run()\n",
+    "job"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "39ee31d2-3553-4e19-bcb9-4cccd0df0e4c",
+   "metadata": {},
+   "source": [
+    "[Job](https://qiskit.github.io/qiskit-serverless/stubs/qiskit_serverless.core.Job.html#qiskit_serverless.core.Job) instances have a `status()` method to check status of the function execution."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "cc7ccea6-bbae-4184-ba7f-67b6c20a0b0b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'DONE'"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "job.status()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f496adbe-3d82-4aad-b86b-6adb3b9d287d",
+   "metadata": {},
+   "source": [
+    "`Job` instances also have a `result()` method for retrieving results. The `result()` method will not return until the job is done running the function."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "ca05d063",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'00': 539, '11': 485}"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "job.result()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "719d3572",
+   "metadata": {},
+   "source": [
+    "To inspect the logs from a function, access them from the ``Job`` instance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "eb5ec85f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2024-12-05 17:26:40,785\tINFO job_manager.py:531 -- Runtime env is setting up.\n",
+      "Running function...\n",
+      "Completed running function.\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(job.logs())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9784597b-9377-4d26-8ab9-a8a9b363c924",
+   "metadata": {},
+   "source": [
+    "`ServerlessClient` object has method `.widget` which renders Jupyter widget to see list of executed programs."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f3129d55",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "client.widget()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
