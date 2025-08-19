@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <!-- Generated with Sphinx 7.1.2 and Furo 2024.08.06 -->
-        <title>qiskit_serverless.core.client - Qiskit Serverless 0.21.1</title>
+        <title>qiskit_serverless.core.client - Qiskit Serverless 0.25.4</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=3ee1c6c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/qiskit-sphinx-theme.css?v=8ff9dcb6" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">Qiskit Serverless 0.21.1</div></a>
+      <a href="../../../index.html"><div class="brand">Qiskit Serverless 0.25.4</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
     <img class="sidebar-logo only-dark" src="../../../_static/images/qiskit-dark-logo.svg" alt="Dark Logo"/>
   </div>
   
-  <span class="sidebar-brand-text">Qiskit Serverless 0.21.1</span>
+  <span class="sidebar-brand-text">Qiskit Serverless 0.25.4</span>
   
 </a>
 <form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
@@ -345,7 +345,6 @@
     <span class="n">RunService</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_serverless.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonSerializable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_serverless.visualizaiton</span><span class="w"> </span><span class="kn">import</span> <span class="n">Widget</span>
 
 
 <div class="viewcode-block" id="BaseClient"><a class="viewcode-back" href="../../../stubs/qiskit_serverless.core.BaseClient.html#qiskit_serverless.core.BaseClient">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">(</span><span class="n">JobService</span><span class="p">,</span> <span class="n">RunService</span><span class="p">,</span> <span class="n">JsonSerializable</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
@@ -370,6 +369,7 @@
         <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">instance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize a BaseClient instance.</span>
@@ -378,12 +378,14 @@
 <span class="sd">            name: name of client</span>
 <span class="sd">            host: host of client a.k.a managers host</span>
 <span class="sd">            token: authentication token for manager</span>
-<span class="sd">            instance: IBM Cloud CRN</span>
+<span class="sd">            instance: IBM Cloud CRN or IQP h/g/p</span>
+<span class="sd">            channel: identifies the method to use to authenticate the user</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span></div>
 
     <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
@@ -499,6 +501,11 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Widget for information about provider and jobs.&quot;&quot;&quot;</span>
+        <span class="c1"># prevent cyclic import</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_serverless.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># pylint: disable=import-outside-toplevel</span>
+            <span class="n">Widget</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">Widget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 </pre></div>
         </article>
@@ -532,7 +539,7 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=18a41c59"></script>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=5c89adc2"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
